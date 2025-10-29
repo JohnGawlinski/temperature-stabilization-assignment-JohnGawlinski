@@ -88,9 +88,18 @@ int * establishConnectionsFromExternalProcesses()
 }
 
 
+int main(int argc, char *argv[])
+{    
 
-int main(void)
-{
+    if (argc != 2) {
+    printf("Usage: %s <initial_central_temp>\n", argv[0]);
+    return -1;
+    }
+
+    float centralTemp = atof(argv[1]);
+    printf("Central process started with initial temperature: %.2f\n", centralTemp);
+
+
     int socket_desc; 
    // unsigned int client_size;
    // struct sockaddr_in server_addr, client_addr;
@@ -125,14 +134,18 @@ int main(void)
 
         }
 
-        // Modify Temperature 
-        float updatedTemp = temperature[0] + temperature[1] + temperature[2] + temperature[3];
-        updatedTemp += updatedTemp / 4.0;  
+	// Compute new central temperature using the correct formula
+        float sumExternals = temperature[0] + temperature[1] + temperature[2] + temperature[3];
+        float prevCentralTemp = centralTemp;
+        centralTemp = (2 * centralTemp + sumExternals) / 6.0;
+
+        printf("Updated Central Temperature = %.4f\n", centralTemp);
+
 
 
         // Construct message with updated temperature
         struct msg updated_msg; 
-        updated_msg.T = updatedTemp;
+        updated_msg.T = centralTemp;
         updated_msg.Index = 0;                // Index of central server 
 
 
@@ -147,7 +160,7 @@ int main(void)
         printf("\n");
 
         // Check stability condition 
-        if (updatedTemp == 0)
+        if (centralTemp == 0)
             stable = true; 
 
     }
@@ -158,5 +171,5 @@ int main(void)
 
     close(socket_desc);
     
-    return 0;
+    return -1;
 }
